@@ -1,3 +1,11 @@
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+///////////////////// - TIMER FOR FUNCTIONS - /////////////////////////////////////////////////////////////////////////////
+
+        const t0 = performance.now();
+        const t1 = performance.now();
+        console.log("Function took: " + (t1 - t0) + " milliseconds");
+
 
 ///////////////////// - THINGS NEEDED IF YOU DON'T WANT TO DROP WHOLE INVENTORY WHEN ITS FULL - /////////////////////////////
 
@@ -70,6 +78,7 @@
             robot.keyToggle("shift", "up");
         }
 
+
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 ///////////////////// - ROTATE CAMERA - ///////////////////////////////////////////////////////////////////////////////////
@@ -81,6 +90,62 @@
             robot.keyToggle("left", "up");
         }
 
+
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-///////////////////// - 
+///////////////////// - CHECK IF TOOLTIPBOX IS PRESENT - //////////////////////////////////////////////////////////////////
+
+        // If tooltipBoxPresent() is true, sleep and call tooltipBoxPresent() to update tooltipBoxState
+        while (tooltipBoxPresent() || robot.getPixelColor(inventory_spaces[27].x, inventory_spaces[27].y) == inventory_empty_space_color){
+            sleep(1000);
+            console.log("Sleeping for 1 second as tree is not chopped down");
+        }
+
+        // Didn't really work since mouse stays in position so if player walks the tooltip box is removed automatically
+        function tooltipBoxPresent(x, y){
+            var blueCounter = 0;
+            var boxSizeWidth = 40;
+            var boxSizeHeight = 20;
+            var check_x = x + 50;
+            var check_y = y + 20;
+            let img = robot.screen.capture(check_x, check_y, boxSizeWidth, boxSizeHeight);
+
+            for (var x = 0; x < boxSizeWidth; x++){
+                for (var y = 0; y < boxSizeHeight; y++){
+                    if (img.colorAt(x, y) == "00ffff"){
+                        blueCounter++;
+                        return true;
+                    }
+                }
+            }
+            return false;
+        }
+
+        
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+///////////////////// - COUNT LOGS IN INVENTORY - ////////////////////////////////////////////////////////////////////////
+
+        // Works well for trees that only give one log, however I do not know if this function requires more than characterIdle() does in OakTree.js
+        // If this function can be executed faster than characterIdle() it will be a great choice but characterIdle() works for all tree types
+        function countLogsInInventory(){
+            let x_coordinate;
+            let y_coordinate;
+            let logsAmount = 0;
+            
+            for(let i = 0; i < inventory_spaces.length; i++){
+                if (inventory_spaces[i]?.x && inventory_spaces[i]?.y){
+                    x_coordinate = inventory_spaces[i]?.x;
+                    y_coordinate = inventory_spaces[i]?.y;
+                    let pixelColor = robot.getPixelColor(x_coordinate, y_coordinate);
+                    if (inventory_empty_space_color != pixelColor){
+                        logsAmount++;
+                    }else{
+                        return logsAmount;
+                    }
+                }else{
+                    console.log("Undefined Error: countLogsInInventory()");
+                }    
+            }
+            return logsAmount;
+        }
