@@ -21,20 +21,22 @@ function main(){
     while (true){
         // Continue looping as long as no item is in 28th space (index 27)
         while (robot.getPixelColor(inventory_spaces[27].x, inventory_spaces[27].y) == inventory_empty_space_color){
+            let currentLogs = countLogsInInventory();
             var tree = findRegularTree();
             if (!tree){
-                console.log("No trees");
                 continue;
             }
             robot.moveMouse(tree.x, tree.y);
             sleep(200); // ZZZ: RANDOMIZE THIS
             robot.mouseClick();
-            sleep(9000); // ZZZ: RANDOMIZE THIS
+            while (countLogsInInventory() == currentLogs){
+                sleep(1000);
+            }
         }
         // Call checkLogsForDrop() when inventory is full
         dropLogs();
-        console.log("Checked for logs! Sleeping for 5 secs");
-        sleep(5000); // ZZZ: RANDOMIZE THIS
+        console.log("Dropped logs! Sleeping for 5 secs");
+        sleep(2000); // ZZZ: RANDOMIZE THIS
     }
 }
 
@@ -73,9 +75,12 @@ function dropLogs(){
     sleep(getRandomInt(240, 439));
     robot.keyToggle("shift", "up");
 }
-
+// MISSCLICKS THO WHICH IS SUSPISH
+// Added an extra security to only move mouse to trees where nearby pixels look like the leaves
+// of the tree. However, this sped down the program too much hence this simple version.
+// Maybe skip regular trees as first levels are fast?
 function findRegularTree(){
-    var x = 300, y = 300, width = 1300, height = 400;
+    var x = 310, y = 340, width = 1300, height = 400;
     let img = robot.screen.capture(x,y,width,height);
     let zone_colors = ["ff00fa","fe00f9"];
 
@@ -113,8 +118,30 @@ function confirmRegularTree(x, y){
             }
         }
     }
-    console.log("Bluecounter: " + blueCounter);
     return (blueCounter == 41);
+}
+
+function countLogsInInventory(){
+    let x_coordinate;
+    let y_coordinate;
+    let logsAmount = 0;
+    
+    for(let i = 0; i < inventory_spaces.length; i++){
+        if (inventory_spaces[i]?.x && inventory_spaces[i]?.y){
+            x_coordinate = inventory_spaces[i]?.x;
+            y_coordinate = inventory_spaces[i]?.y;
+            let pixelColor = robot.getPixelColor(x_coordinate, y_coordinate);
+            if (inventory_empty_space_color != pixelColor){
+                //console.log("Slot: " + inventory_spaces[i].space + " exists");
+                logsAmount++;
+            }else{
+                return logsAmount;
+            }
+        }else{
+            console.log("Undefined Error: countLogsInInventory()");
+        }    
+    }
+    return logsAmount;
 }
 
 function getRandomInt(min, max){
