@@ -44,7 +44,16 @@ function main(){
         }
         dropLogs();
         //bankLogs();
-        sleepRandom(1233, 1965);
+        let randomInt = getRandomInt(1,50);
+        if (randomInt >= 1 && randomInt <= 15){
+            sleepRandom(1233, 1965);
+        }else if(randomInt >= 16 && randomInt <= 42){
+            sleepRandom(896, 1533);
+        }else if(randomInt >= 43 && randomInt <= 48){
+            sleepRandom(7643, 8493);
+        }else if (randomInt >= 49){
+            sleepRandom(59876, 126493);
+        }
     }
 }
 
