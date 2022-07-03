@@ -64,10 +64,10 @@ function dropLogs(){
     let y_coordinate = 0;
     let randomDropPattern = [0];
 
-    if (getRandomInt(1,2) == 1){
-        randomDropPattern = dropPattern1;
-    }else{
+    if (getRandomInt(1,3) == 1){
         randomDropPattern = dropPattern2;
+    }else{
+        randomDropPattern = dropPattern1;
     }
     robot.keyToggle("shift", "down");
     sleep(getRandomInt(438, 2137));
@@ -106,7 +106,6 @@ function findOakTree(){
             var screen_x = random_x + x;
             var screen_y = random_y + y;
             return {x: screen_x, y:screen_y};
-            // Second control of blue tooltip text is not really needed as hovering over the tile will always guarantee a hit
         }
     }
     return false;

@@ -1,6 +1,9 @@
 // Import of the robotjs library
-    var robot = require('robotjs');
-// Log color for each empty inventory space
+    //var robot = require('robotjs');
+    import robot from 'robotjs';
+    import { path } from "ghost-cursor";
+
+    // Log color for each empty inventory space
     var inventory_empty_space_color = ["3e3529"];
 // Two common drop patterns that are used and randomized when the dropLogs() function is called
     var dropPattern1 = [1,2,5,6,9,10,13,14,17,18,21,22,25,26,3,4,7,8,11,12,15,16,19,20,23,24,27,28];
@@ -13,30 +16,44 @@
                             {x:1755, y:904, space: 17},{x:1797, y:904, space: 18},{x:1839, y:904, space: 19},{x:1881, y:904, space: 20},
                             {x:1755, y:940, space: 21},{x:1797, y:940, space: 22},{x:1839, y:940, space: 23},{x:1881, y:940, space: 24},
                             {x:1755, y:976, space: 25},{x:1797, y:976, space: 26},{x:1839, y:976, space: 27},{x:1881, y:976, space: 28}]
+    
+    var treesClosestToUser = [];
+    var character_x = 940, character_y = 513;
 
 function main(){
     console.log("Starting woodcutter for regular trees...");
-    sleep(4000);
+    sleep(5000);
+    
     // Loop to keep the bot going
     while (true){
         // Continue looping as long as no item is in 28th space (index 27)
         while (robot.getPixelColor(inventory_spaces[27].x, inventory_spaces[27].y) == inventory_empty_space_color){
-            let currentLogs = countLogsInInventory();
+            //let currentLogs = countLogsInInventory();
             var tree = findRegularTree();
             if (!tree){
-                continue;
+                break;
             }
-            robot.moveMouse(tree.x, tree.y);
-            sleep(200); // ZZZ: RANDOMIZE THIS
+            
+            moveMouseHuman(tree.x, tree.y);
+            sleepRandom(183, 245);
             robot.mouseClick();
-            while (countLogsInInventory() == currentLogs){
-                sleep(1000);
+            sleepRandom(9283, 18732);
+            while (!characterIdle()){
+                sleepRandom(1879, 2311);
             }
         }
-        // Call checkLogsForDrop() when inventory is full
         dropLogs();
-        console.log("Dropped logs! Sleeping for 5 secs");
-        sleep(2000); // ZZZ: RANDOMIZE THIS
+        //bankLogs();
+        sleepRandom(1233, 1965);
+    }
+}
+
+function moveMouseHuman(to_x, to_y){
+    let from = {x: robot.getMousePos().x, y: robot.getMousePos().y};
+    let to = {x: to_x, y: to_y}
+    const route = path(from, to)
+    for (const coordinate of route) {
+        robot.moveMouse(coordinate.x, coordinate.y);
     }
 }
 
@@ -47,101 +64,90 @@ function dropLogs(){
     let y_coordinate = 0;
     let randomDropPattern = [0];
 
-    if (getRandomInt(1,2) == 1){
-        randomDropPattern = dropPattern1;
-    }else{
+    if (getRandomInt(1,3) == 1){
         randomDropPattern = dropPattern2;
+    }else{
+        randomDropPattern = dropPattern1;
     }
     robot.keyToggle("shift", "down");
-    sleep(getRandomInt(438, 2137));
-    for (var i = 0; i < inventory_spaces.length; i++){
-        // Use the randomDropPattern, retrieve coordinates
+    sleepRandom(438, 2137);
+    for (var i = 1; i < inventory_spaces.length; i++){
         // TODO:
-            // RANDOMIZE THE ACCURACY OF MOUSE CLICKS
-            // MORE VARIATION BETWEEN CLICKS (perhaps looking through human recording?)
             // IMPLEMENT MISSCLICKS FOR REALISM
         if (inventory_spaces[randomDropPattern[i]-1]?.x && inventory_spaces[randomDropPattern[i]-1]?.y){
             x_coordinate = inventory_spaces[randomDropPattern[i]-1]?.x;
-            y_coordinate = inventory_spaces[randomDropPattern[i]-1]?.y;
-            sleep(getRandomInt(28, 37));
-            robot.moveMouse(x_coordinate, y_coordinate);
-            sleep(getRandomInt(28, 37));
+            y_coordinate = inventory_spaces[randomDropPattern[i]-1]?.y; 
+            //sleepRandom(46, 63);
+            let randomInt = getRandomInt(1,4);
+            if (randomInt == 1){
+                robot.moveMouseSmooth((getRandomInt(x_coordinate, x_coordinate + 10)), getRandomInt(y_coordinate, y_coordinate + 10));
+            }else if (randomInt == 2){
+                robot.moveMouseSmooth((getRandomInt(x_coordinate, x_coordinate + 10)), getRandomInt(y_coordinate - 10, y_coordinate));
+            }else if (randomInt == 3){
+                robot.moveMouseSmooth((getRandomInt(x_coordinate - 10, x_coordinate)), getRandomInt(y_coordinate, y_coordinate + 10));
+            }else{
+                robot.moveMouseSmooth((getRandomInt(x_coordinate - 10, x_coordinate)), getRandomInt(y_coordinate - 10, y_coordinate));
+            }
+            //sleepRandom(23, 35);
             robot.mouseClick();
         }else{
             console.log("Undefined Error: dropLogs()");
         }
-        sleep(getRandomInt(28, 37));
+        sleepRandom(23, 35);
     }
-    sleep(getRandomInt(240, 439));
+    sleepRandom(240, 439);
     robot.keyToggle("shift", "up");
 }
-// MISSCLICKS THO WHICH IS SUSPISH
-// Added an extra security to only move mouse to trees where nearby pixels look like the leaves
-// of the tree. However, this sped down the program too much hence this simple version.
-// Maybe skip regular trees as first levels are fast?
-function findRegularTree(){
-    var x = 310, y = 340, width = 1300, height = 400;
-    let img = robot.screen.capture(x,y,width,height);
-    let zone_colors = ["ff00fa","fe00f9"];
 
-    for (var i = 0; i < 500; i++){
+function findRegularTree(){
+    var x = 655, y = 218, width = 622, height = 651;
+    let img = robot.screen.capture(x,y,width,height);
+    let zone_colors = ["ff00fa"];
+
+    for (var i = 0; i < 5000; i++){
         var random_x = getRandomInt(0, width - 1);
         var random_y = getRandomInt(0, height - 1);
         var sample_color = img.colorAt(random_x, random_y);
         if (zone_colors.includes(sample_color)){
             var screen_x = random_x + x;
             var screen_y = random_y + y;
-            if (confirmRegularTree(screen_x, screen_y)){
-                return {x: screen_x, y: screen_y};
+            treesClosestToUser.push({x: screen_x, y: screen_y});
+            //console.log("Found tree at X: " + screen_x + ", Y: " + screen_y);
+        }
+    }
+    return treeClosestToUser();
+}
+
+function treeClosestToUser(){
+    let sumSort = (a, b) => (a.x + a.y) - (b.x + b.y);
+    treesClosestToUser.sort(sumSort);
+    let targetNumber = 1453;
+    let bestMatch = 6969;
+    let bestTree;
+    for (let i = 0; i < treesClosestToUser.length; i++){
+        if (Math.abs(targetNumber - (treesClosestToUser[i].x + treesClosestToUser[i].y)) < bestMatch){
+            bestMatch = Math.abs(targetNumber - (treesClosestToUser[i].x + treesClosestToUser[i].y));
+            bestTree = {x: treesClosestToUser[i].x, y: treesClosestToUser[i].y};
+        }
+    }
+    treesClosestToUser = [];
+    return bestTree;
+}
+
+function characterIdle(){
+    let x = character_x, y = character_y, width = 42, height = 37;
+    let img = robot.screen.capture(x,y,width,height);
+    let zone_colors = ["f4f3f3","f3f2f2","f0eeed","f1efef","f5f4f4","f3f1f1","edeaea","efecec","e9e5e5","ebe8e8","ece9e9","eae7e7","eeebeb","f2f0f0"];
+
+    for (let x_axis = 0; x_axis < width; x_axis++){
+        for (let y_axis = 0; y_axis < height; y_axis++){
+            let sample_color = img.colorAt(x_axis, y_axis);
+            if (zone_colors.includes(sample_color)){
+                return true;
             }
         }
     }
     return false;
-}
-
-function confirmRegularTree(x, y){
-    robot.moveMouse(x, y);
-    sleep(50); 
-    var blueCounter = 0;
-    var boxSizeWidth = 40;
-    var boxSizeHeight = 20;
-    // Check x and y are starting points (top-left corner) for the box that overlays the "Tree" text
-    var check_x = x + 50;
-    var check_y = y + 20;
-    let img = robot.screen.capture(check_x, check_y, boxSizeWidth, boxSizeHeight);
-    
-
-    for (var x = 0; x < boxSizeWidth; x++){
-        for (var y = 0; y < boxSizeHeight; y++){
-            if (img.colorAt(x, y) == "00ffff"){
-                blueCounter++;
-            }
-        }
-    }
-    return (blueCounter == 41);
-}
-
-function countLogsInInventory(){
-    let x_coordinate;
-    let y_coordinate;
-    let logsAmount = 0;
-    
-    for(let i = 0; i < inventory_spaces.length; i++){
-        if (inventory_spaces[i]?.x && inventory_spaces[i]?.y){
-            x_coordinate = inventory_spaces[i]?.x;
-            y_coordinate = inventory_spaces[i]?.y;
-            let pixelColor = robot.getPixelColor(x_coordinate, y_coordinate);
-            if (inventory_empty_space_color != pixelColor){
-                //console.log("Slot: " + inventory_spaces[i].space + " exists");
-                logsAmount++;
-            }else{
-                return logsAmount;
-            }
-        }else{
-            console.log("Undefined Error: countLogsInInventory()");
-        }    
-    }
-    return logsAmount;
 }
 
 function getRandomInt(min, max){
@@ -152,6 +158,13 @@ function getRandomInt(min, max){
 
 function sleep(ms){
     Atomics.wait(new Int32Array(new SharedArrayBuffer(4)), 0, 0, ms);
+}
+
+function sleepRandom(min, max){
+    min = Math.ceil(min);
+    max = Math.floor(max);
+    let time = Math.floor(Math.random() * (max - min + 1)) + min;
+    Atomics.wait(new Int32Array(new SharedArrayBuffer(4)), 0, 0, time);
 }
 
 main();
