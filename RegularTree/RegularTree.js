@@ -67,7 +67,7 @@ function moveMouseHuman(to_x, to_y){
 }
 
 // Use inventory_spaces and drop only those items at those coordinates
-    // Uses different dropPatterns
+// Uses different dropPatterns
 function dropLogs(){
     let x_coordinate = 0;
     let y_coordinate = 0;
@@ -89,13 +89,13 @@ function dropLogs(){
             //sleepRandom(46, 63);
             let randomInt = getRandomInt(1,4);
             if (randomInt == 1){
-                robot.moveMouseSmooth((getRandomInt(x_coordinate, x_coordinate + 10)), getRandomInt(y_coordinate, y_coordinate + 10));
+                moveMouseHuman((getRandomInt(x_coordinate, x_coordinate + 5)), getRandomInt(y_coordinate, y_coordinate + 5));
             }else if (randomInt == 2){
-                robot.moveMouseSmooth((getRandomInt(x_coordinate, x_coordinate + 10)), getRandomInt(y_coordinate - 10, y_coordinate));
+                moveMouseHuman((getRandomInt(x_coordinate, x_coordinate + 5)), getRandomInt(y_coordinate - 5, y_coordinate));
             }else if (randomInt == 3){
-                robot.moveMouseSmooth((getRandomInt(x_coordinate - 10, x_coordinate)), getRandomInt(y_coordinate, y_coordinate + 10));
+                moveMouseHuman((getRandomInt(x_coordinate - 5, x_coordinate)), getRandomInt(y_coordinate, y_coordinate + 5));
             }else{
-                robot.moveMouseSmooth((getRandomInt(x_coordinate - 10, x_coordinate)), getRandomInt(y_coordinate - 10, y_coordinate));
+                moveMouseHuman((getRandomInt(x_coordinate - 5, x_coordinate)), getRandomInt(y_coordinate - 5, y_coordinate));
             }
             //sleepRandom(23, 35);
             robot.mouseClick();
